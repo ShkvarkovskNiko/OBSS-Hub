@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Просмотр статьи - OBSS Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="/static/styles/styles.css" />
+  <style>
+    #article-content {
+      white-space: pre-wrap; /* сохраняет переносы строк */
+      max-width: 800px;
+      margin: 20px auto;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      padding: 0 15px;
+    }
+    #article-image {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      margin-bottom: 20px;
+    }
+    .rating-section {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .rating-section p {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .rating-section .stars {
+      font-size: 24px;
+    }
+    .rating-section .stars i {
+      color: #ddd;
+      cursor: pointer;
+      margin: 0 2px;
+    }
+    .rating-section .stars i.active {
+      color: #ffd700;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="logo-search">
+        <a href="/" class="logo-link">
+          <h1><i class="fas fa-book"></i> OBSS Hub</h1>
+        </a>
+        <form id="search-form" class="search-bar">
+          <input type="text" id="search-input" placeholder="Поиск..." />
+          <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+      </div>
+      <nav id="nav-menu"></nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="container">
+      <section class="section">
+        <h2 id="article-title">Загрузка...</h2>
+        <img id="article-image" src="" alt="Изображение статьи" />
+        <div id="article-content">Пожалуйста, подождите, статья загружается.</div>
+        <div class="rating-section">
+          <p>Средняя оценка: <span id="average-rating">0</span></p>
+          <div class="stars" id="rating-stars">
+            <i class="fas fa-star" data-value="1"></i>
+            <i class="fas fa-star" data-value="2"></i>
+            <i class="fas fa-star" data-value="3"></i>
+            <i class="fas fa-star" data-value="4"></i>
+            <i class="fas fa-star" data-value="5"></i>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer id="main-footer" class="footer">
+    <div class="container">
+      <div class="footer-columns">
+        <div class="footer-links">
+          <h3>Навигация</h3>
+          <ul>
+            <li><a href="/">Главная</a></li>
+            <li><a href="/article.html">Статьи</a></li>
+            <li><a href="/events.html">Мероприятия</a></li>
+            <li><a href="/add-article.html">Добавить статью</a></li>
+            <li><a href="/add-event.html">Добавить мероприятие</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h3>Контакты</h3>
+          <ul>
+            <li><a href="/cdn-cgi/l/email-protection">[email protected]</a></li>
+            <li><a href="tel:+79991234567">+7 (999) 123-45-67</a></li>
+          </ul>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fab fa-vk"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">© 2025 OBSS Hub. Все права защищены.</div>
+    </div>
+  </footer>
+
+  <script src="/static/JavaScript/anima.js"></script>
+  <script src="/static/JavaScript/search.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const params = new URLSearchParams(window.location.search);
+      const articleId = params.get('id');
+
+      if (!articleId) {
+        document.getElementById('article-title').textContent = 'Ошибка: не указан ID статьи.';
+        document.getElementById('article-content').textContent = '';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/public/articles/${articleId}`);
+        if (!response.ok) throw new Error(`Ошибка загрузки статьи: ${response.statusText}`);
+        const article = await response.json();
+
+        document.getElementById('article-title').textContent = article.title;
+        document.getElementById('article-content').textContent = article.content;
+
+        const imgEl = document.getElementById('article-image');
+        if (article.image) {
+          imgEl.src = `/static/uploads/${article.image}`;
+          imgEl.style.display = 'block';
+        } else {
+          imgEl.style.display = 'none';
+        }
+
+        // Загрузка средней оценки
+        const ratingResponse = await fetch(`/api/articles/${articleId}/rating`);
+        if (ratingResponse.ok) {
+          const { rating } = await ratingResponse.json();
+          document.getElementById('average-rating').textContent = rating;
+        }
+      } catch (error) {
+        document.getElementById('article-title').textContent = 'Ошибка загрузки статьи';
+        document.getElementById('article-content').textContent = error.message;
+      }
+
+      // Обработчик для звёздочек рейтинга
+      const stars = document.querySelectorAll('#rating-stars i');
+      stars.forEach(star => {
+        star.addEventListener('click', async () => {
+          const ratingValue = parseInt(star.dataset.value);
+          try {
+            const response = await fetch(`/api/articles/${articleId}/rating`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rating: ratingValue })
+            });
+            if (!response.ok) throw new Error('Необходимо войти в аккаунт для оценки');
+            const { average } = await response.json();
+            document.getElementById('average-rating').textContent = average;
+
+            // Обновление активных звёздочек
+            stars.forEach(s => {
+              s.classList.remove('active');
+              if (parseInt(s.dataset.value) <= ratingValue) {
+                s.classList.add('active');
+              }
+            });
+          } catch (error) {
+            alert(error.message);
+          }
+        });
+
+        star.addEventListener('mouseover', () => {
+          stars.forEach(s => {
+            s.classList.remove('active');
+            if (parseInt(s.dataset.value) <= parseInt(star.dataset.value)) {
+              s.classList.add('active');
+            }
+          });
+        });
+
+        star.addEventListener('mouseout', () => {
+          stars.forEach(s => s.classList.remove('active'));
+        });
+      });
+    });
+
+    // Навигейшен
+    async function updateNavMenu() {
+      const navMenu = document.getElementById('nav-menu');
+      try {
+        const response = await fetch('/api/user');
+        const navList = document.createElement('ul');
+        navList.className = 'nav-list';
+        if (response.ok) {
+          const user = await response.json();
+          navList.innerHTML = `
+            <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+            <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+            <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+            <li><a href="/profile.html"><i class="fas fa-user"></i> ${user.username}</a></li>
+            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+          `;
+          navMenu.appendChild(navList);
+          document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+          });
+        } else {
+          navList.innerHTML = `
+            <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+            <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+            <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+            <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Войти</a></li>
+            <li><a href="/register.html"><i class="fas fa-user-plus"></i> Регистрация</a></li>
+          `;
+          navMenu.appendChild(navList);
+        }
+      } catch (err) {
+        console.error('Ошибка проверки пользователя:', err);
+      }
+    }
+
+    updateNavMenu();
+  </script>
+</body>
+</html>

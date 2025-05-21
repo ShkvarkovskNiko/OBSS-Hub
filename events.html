@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мероприятия - OBSS Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo-search">
+                <a href="/" class="logo-link">
+                    <h1><i class="fas fa-book"></i> OBSS Hub</h1>
+                </a>
+                <form id="search-form" class="search-bar">
+                    <input type="text" id="search-input" placeholder="Поиск...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <nav id="nav-menu"></nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <section class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Все мероприятия</h2>
+                    <a href="/add-event.html" class="view-all">Добавить мероприятие</a>
+                </div>
+                <div id="events-container" class="cards-grid"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer id="main-footer" class="footer">
+        <div class="container">
+            <div class="footer-columns">
+                <div class="footer-links">
+                    <h3>Навигация</h3>
+                    <ul>
+                        <li><a href="/">Главная</a></li>
+                        <li><a href="/article.html">Статьи</a></li>
+                        <li><a href="/events.html">Мероприятия</a></li>
+                        <li><a href="/add-article.html">Добавить статью</a></li>
+                        <li><a href="/add-event.html">Добавить мероприятие</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>Контакты</h3>
+                    <ul>
+                        <li><a href="mailto:info@obsshub.ru">info@obsshub.ru</a></li>
+                        <li><a href="tel:+79991234567">+7 (999) 123-45-67</a></li>
+                    </ul>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 OBSS Hub. Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/JavaScript/anima.js"></script>
+    <script src="/static/JavaScript/search.js"></script>
+    <script>
+        async function updateNavMenu() {
+            const navMenu = document.getElementById('nav-menu');
+            try {
+                const response = await fetch('/api/user');
+                const navList = document.createElement('ul');
+                navList.className = 'nav-list';
+                if (response.ok) {
+                    const user = await response.json();
+                    navList.innerHTML = `
+                        <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+                        <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+                        <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+                        <li><a href="/add-article.html"><i class="fas fa-plus"></i> Добавить статью</a></li>
+                        <li><a href="/add-event.html"><i class="fas fa-plus"></i> Добавить мероприятие</a></li>
+                        <li><a href="/profile.html"><i class="fas fa-user"></i> ${user.username}</a></li>
+                        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                    `;
+                    navMenu.appendChild(navList);
+                    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        await fetch('/api/logout', { method: 'POST' });
+                        window.location.href = '/';
+                    });
+                } else {
+                    navList.innerHTML = `
+                        <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+                        <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+                        <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+                        <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Войти</a></li>
+                        <li><a href="/register.html"><i class="fas fa-user-plus"></i> Регистрация</a></li>
+                    `;
+                    navMenu.appendChild(navList);
+                }
+            } catch (err) {
+                console.error('Ошибка проверки пользователя:', err);
+            }
+        }
+
+        async function loadEvents() {
+            try {
+                const response = await fetch('/api/events');
+                if (!response.ok) throw new Error(`Ошибка загрузки мероприятий: ${response.status}`);
+                const events = await response.json();
+                console.log('Мероприятия загружены:', events);
+                const container = document.getElementById('events-container');
+                if (events.length === 0) {
+                    container.innerHTML = '<p>Мероприятий пока нет.</p>';
+                    return;
+                }
+                container.innerHTML = events.map(event => `
+                    <div class="event-card">
+                        <div class="card-date">
+                            <span class="day">${new Date(event.date).getDate()}</span>
+                            <span class="month">${new Date(event.date).toLocaleString('ru', { month: 'short' })}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>${event.title}</h3>
+                            <div class="meta">
+                                <span><i class="fas fa-map-marker-alt"></i>${event.location || 'Не указано'}</span>
+                                <span><i class="fas fa-calendar-alt"></i>${event.date}</span>
+                            </div>
+                            <p>${event.description.substring(0, 100)}...</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Ошибка загрузки мероприятий:', err);
+                document.getElementById('events-container').innerHTML = '<p>Ошибка загрузки мероприятий.</p>';
+            }
+        }
+
+        updateNavMenu();
+        loadEvents();
+    </script>
+</body>
+</html>

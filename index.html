@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OBSS Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+    <link rel="stylesheet" href="/static/styles/styles.css" />
+    <style>
+        .hero {
+            height: 400px;
+            background: url('/static/uploads/hero-bg.jpg') no-repeat center center/cover;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            position: relative;
+            margin-bottom: 40px;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            z-index: 1;
+        }
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            z-index: 1;
+        }
+        .hero-content .cta-button {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 2;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .hero-content .cta-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .hero-content .cta-button:active {
+            background-color: #003d80;
+            transform: scale(0.98);
+        }
+
+        .articles-carousel-fullwidth,
+        .events-carousel-fullwidth {
+            width: 100%;
+            max-width: 100vw;
+            padding: 40px 0;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+            overflow: hidden;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .articles-carousel-fullwidth .container,
+        .events-carousel-fullwidth .container {
+            max-width: 1200px;
+            padding: 0 15px;
+            margin: 0 auto;
+        }
+        .articles-carousel,
+        .events-carousel {
+            width: 100%;
+        }
+        .article-card {
+            min-width: 120px;
+            max-width: 150px;
+            flex: 0 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 0 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 300px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .article-card:hover {
+            transform: translateY(-5px);
+        }
+        .article-card img,
+        .article-card .img-placeholder {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #f0f0f0;
+        }
+        .article-card .card-content {
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .article-card h3 {
+            font-size: 1.1rem;
+            margin: 0 0 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .article-card p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #666;
+        }
+
+        .event-card {
+            min-width: 250px;
+            max-width: 300px;
+            flex: 0 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 0 10px;
+            height: 200px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+        .event-card .event-header {
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .event-card .event-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: #f1f5f9;
+        }
+        .event-card h3 {
+            font-size: 1.2rem;
+            margin: 0 0 10px;
+            color: #1e3a8a;
+        }
+        .event-card .meta {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        .event-card .meta i {
+            margin-right: 5px;
+        }
+        .event-card p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #64748b;
+        }
+
+        .slick-prev, .slick-next {
+            z-index: 1;
+            width: 40px;
+            height: 40px;
+        }
+        .slick-prev:before, .slick-next:before {
+            font-size: 30px;
+            color: #333;
+        }
+        .slick-prev {
+            left: -50px;
+        }
+        .slick-next {
+            right: -50px;
+        }
+        @media (max-width: 768px) {
+            .slick-prev {
+                left: 10px;
+            }
+            .slick-next {
+                right: 10px;
+            }
+            .article-card {
+                max-width: 120px;
+                height: 250px;
+            }
+            .event-card {
+                min-width: 200px;
+                max-width: 250px;
+                height: 180px;
+            }
+            .event-card .event-header {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo-search">
+                <a href="/" class="logo-link">
+                    <h1><i class="fas fa-book"></i> OBSS Hub</h1>
+                </a>
+                <form id="search-form" class="search-bar">
+                    <input type="text" id="search-input" placeholder="Поиск..." />
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                    <div id="search-results" class="search-results"></div>
+                </form>
+            </div>
+            <nav id="nav-menu"></nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>Добро пожаловать в OBSS Hub</h1>
+                <p>Откройте для себя статьи, мероприятия и вдохновение для вашего пути!</p>
+                <a href="/article.html" class="cta-button" onclick="event.preventDefault(); window.location.href='/article.html';">Начать сейчас</a>
+            </div>
+        </div>
+
+        <section class="articles-carousel-fullwidth">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-newspaper"></i> Популярные статьи</h2>
+                    <a href="/article.html" class="view-all">Смотреть все</a>
+                </div>
+                <div id="articles-container" class="cards-grid articles-carousel"></div>
+            </div>
+        </section>
+
+        <section class="events-carousel-fullwidth">
+            <div class="container">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Ближайшие мероприятия</h2>
+                    <a href="/events.html" class="view-all">Смотреть все</a>
+                </div>
+                <div id="events-container" class="cards-grid events-carousel"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="main-footer" class="footer">
+        <div class="container">
+            <div class="footer-columns">
+                <div class="footer-links">
+                    <h3>Навигация</h3>
+                    <ul>
+                        <li><a href="/">Главная</a></li>
+                        <li><a href="/article.html">Статьи</a></li>
+                        <li><a href="/events.html">Мероприятия</a></li>
+                        <li><a href="/add-article.html">Добавить статью</a></li>
+                        <li><a href="/add-event.html">Добавить мероприятие</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>Контакты</h3>
+                    <ul>
+                        <li><a href="mailto:info@obsshub.ru">info@obsshub.ru</a></li>
+                        <li><a href="tel:+79991234567">+7 (999) 123-45-67</a></li>
+                    </ul>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">© 2025 OBSS Hub. Все права защищены.</div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+    <script src="/static/JavaScript/anima.js"></script>
+    <script src="/static/JavaScript/search.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Показ подвала при прокрутке
+            const footer = document.getElementById('main-footer');
+            let isFooterVisible = false;
+            function toggleFooter() {
+                const scrollPosition = window.scrollY;
+                if (scrollPosition > 100 && !isFooterVisible) {
+                    footer.classList.add('visible');
+                    isFooterVisible = true;
+                } else if (scrollPosition <= 100 && isFooterVisible) {
+                    footer.classList.remove('visible');
+                    isFooterVisible = false;
+                }
+            }
+            window.addEventListener('scroll', toggleFooter);
+
+            // Обновление навигационного меню
+            async function updateNavMenu() {
+                const navMenu = document.getElementById('nav-menu');
+                if (!navMenu) return;
+                try {
+                    const response = await fetch('/api/user');
+                    if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+                    const data = await response.json();
+                    const navList = document.createElement('ul');
+                    navList.className = 'nav-list';
+                    navList.innerHTML = `
+                        <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+                        <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+                        <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+                        <li><a href="/add-article.html"><i class="fas fa-plus"></i> Добавить статью</a></li>
+                        <li><a href="/add-event.html"><i class="fas fa-plus"></i> Добавить мероприятие</a></li>
+                        <li><a href="/profile.html"><i class="fas fa-user"></i> ${data.username}</a></li>
+                        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                    `;
+                    navMenu.appendChild(navList);
+                    const logoutBtn = document.getElementById('logout-btn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', async (e) => {
+                            e.preventDefault();
+                            await fetch('/api/logout', { method: 'POST' });
+                            window.location.href = '/';
+                        });
+                    }
+                } catch (err) {
+                    const navList = document.createElement('ul');
+                    navList.className = 'nav-list';
+                    navList.innerHTML = `
+                        <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+                        <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+                        <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+                        <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Войти</a></li>
+                        <li><a href="/register.html"><i class="fas fa-user-plus"></i> Регистрация</a></li>
+                    `;
+                    navMenu.appendChild(navList);
+                    console.error('Ошибка проверки пользователя:', err.message);
+                }
+            }
+
+            // Загрузка и инициализация карусели статей
+            async function loadArticles() {
+                const container = document.getElementById('articles-container');
+                if (!container) {
+                    console.error('Контейнер #articles-container не найден');
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/articles');
+                    if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+                    const articles = await response.json();
+                    if (articles.length === 0) {
+                        container.innerHTML = '<p>Статей пока нет.</p>';
+                        return;
+                    }
+                    container.innerHTML = articles.slice(0, 10).map(article => `
+                        <div class="article-card" data-url="/view-article.html?id=${article.id}">
+                            ${
+                                article.image
+                                    ? `<img src="/static/uploads/${article.image}" alt="Article image">`
+                                    : `<div class="img-placeholder"></div>`
+                            }
+                            <div class="card-content">
+                                <h3>${article.title}</h3>
+                                <p>${article.content.substring(0, 50)}...</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    console.log('Инициализация карусели статей...');
+                    $(container).slick({
+                        infinite: true,
+                        slidesToShow: 5,
+                        slidesToScroll: 1,
+                        autoplay: true,
+                        autoplaySpeed: 3000,
+                        arrows: true,
+                        responsive: [
+                            { breakpoint: 1024, settings: { slidesToShow: 3 } },
+                            { breakpoint: 600, settings: { slidesToShow: 1 } }
+                        ]
+                    }).on('init', function(event, slick) {
+                        console.log('Карусель статей инициализирована');
+                    }).on('edge', function(event, slick, direction) {
+                        console.log('Карусель статей достигла края:', direction);
+                    });
+
+                    const articleCards = container.getElementsByClassName('article-card');
+                    Array.from(articleCards).forEach(card => {
+                        card.addEventListener('click', (e) => {
+                            if (e.target.tagName.toLowerCase() === 'button') return;
+                            const url = card.dataset.url;
+                            if (url) {
+                                window.open(url, '_blank', 'noopener');
+                            }
+                        });
+                    });
+                } catch (err) {
+                    container.innerHTML = '<p>Ошибка загрузки статей.</p>';
+                    console.error('Ошибка загрузки статей:', err.message);
+                }
+            }
+
+            // Загрузка и инициализация карусели мероприятий
+            async function loadEvents() {
+                const container = document.getElementById('events-container');
+                if (!container) {
+                    console.error('Контейнер #events-container не найден');
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/events');
+                    if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+                    const events = await response.json();
+                    const currentDate = new Date();
+                    const futureEvents = events.filter(event => new Date(event.date) >= currentDate).slice(0, 6);
+
+                    if (futureEvents.length === 0) {
+                        container.innerHTML = '<p>Ближайших мероприятий нет.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = futureEvents.map(event => {
+                        const eventDate = new Date(event.date);
+                        return `
+                            <div class="event-card" data-url="/view-event.html?id=${event.id}">
+                                <div class="event-header">
+                                    ${eventDate.getDate()} <br> ${eventDate.toLocaleString('ru', { month: 'short' })}
+                                </div>
+                                <div class="event-content">
+                                    <h3>${event.title}</h3>
+                                    <div class="meta">
+                                        <span><i class="fas fa-map-marker-alt"></i> ${event.location || 'Не указано'}</span>
+                                        <span><i class="fas fa-calendar-alt"></i> ${eventDate.toLocaleDateString('ru')}</span>
+                                    </div>
+                                    <p>${event.description.substring(0, 50)}...</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    console.log('Инициализация карусели мероприятий...');
+                    $(container).slick({
+                        infinite: true,
+                        slidesToShow: 3,
+                        slidesToScroll: 1,
+                        autoplay: true,
+                        autoplaySpeed: 3000,
+                        arrows: true,
+                        responsive: [
+                            { breakpoint: 1024, settings: { slidesToShow: 2 } },
+                            { breakpoint: 600, settings: { slidesToShow: 1 } }
+                        ]
+                    }).on('init', function(event, slick) {
+                        console.log('Карусель мероприятий инициализирована');
+                    }).on('edge', function(event, slick, direction) {
+                        console.log('Карусель мероприятий достигла края:', direction);
+                    });
+
+                    const eventCards = container.getElementsByClassName('event-card');
+                    Array.from(eventCards).forEach(card => {
+                        card.addEventListener('click', (e) => {
+                            if (e.target.tagName.toLowerCase() === 'button') return;
+                            const url = card.dataset.url;
+                            if (url) {
+                                window.open(url, '_blank', 'noopener');
+                            }
+                        });
+                    });
+                } catch (err) {
+                    container.innerHTML = '<p>Ошибка загрузки мероприятий.</p>';
+                    console.error('Ошибка загрузки мероприятий:', err.message);
+                }
+            }
+
+            updateNavMenu();
+            loadArticles();
+            loadEvents();
+        });
+    </script>
+</body>
+</html>

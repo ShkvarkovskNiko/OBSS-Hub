@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Профиль - OBSS Hub</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+  <link rel="stylesheet" href="/static/styles/styles.css" />
+  <style>
+    /* Стили только для модального окна и уникальных элементов */
+    #edit-article-modal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 90%;
+      z-index: 1000;
+    }
+    #edit-article-modal label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    #edit-article-modal input[type="text"],
+    #edit-article-modal textarea,
+    #edit-article-modal input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    #edit-article-modal button {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="logo-search">
+        <a href="/" class="logo-link">
+          <h1><i class="fas fa-book"></i> OBSS Hub</h1>
+        </a>
+        <form id="search-form" class="search-bar">
+          <input type="text" id="search-input" placeholder="Поиск..." />
+          <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+      </div>
+      <nav id="nav-menu"></nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="container">
+      <section class="section">
+        <h2>Мой профиль</h2>
+        <p id="username-display"></p>
+
+        <h3>Мои статьи</h3>
+        <div id="my-articles-container" class="cards-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="edit-article-modal">
+    <h3>Редактировать статью</h3>
+    <form id="edit-article-form">
+      <input type="hidden" id="edit-article-id" />
+      <label for="edit-article-title">Заголовок:</label>
+      <input type="text" id="edit-article-title" required />
+      <label for="edit-article-content">Контент:</label>
+      <textarea id="edit-article-content" rows="6" required></textarea>
+      <label for="edit-article-tags">Теги (через запятую):</label>
+      <input type="text" id="edit-article-tags" />
+      <label for="edit-article-image">Изображение:</label>
+      <input type="file" id="edit-article-image" accept="image/*" />
+      <button type="submit" class="btn">Сохранить</button>
+      <button type="button" id="cancel-edit-btn" class="btn">Отмена</button>
+    </form>
+  </div>
+
+  <footer id="main-footer" class="footer">
+    <div class="container">
+      <div class="footer-columns">
+        <div class="footer-links">
+          <h3>Навигация</h3>
+          <ul>
+            <li><a href="/">Главная</a></li>
+            <li><a href="/article.html">Статьи</a></li>
+            <li><a href="/events.html">Мероприятия</a></li>
+            <li><a href="/add-article.html">Добавить статью</a></li>
+            <li><a href="/add-event.html">Добавить мероприятие</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h3>Контакты</h3>
+          <ul>
+            <li><a href="mailto:info@obsshub.ru">info@obsshub.ru</a></li>
+            <li><a href="tel:+79991234567">+7 (999) 123-45-67</a></li>
+          </ul>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fab fa-vk"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">© 2025 OBSS Hub. Все права защищены.</div>
+    </div>
+  </footer>
+
+  <script src="/static/JavaScript/anima.js"></script>
+  <script src="/static/JavaScript/search.js"></script>
+  <script>
+    async function updateNavMenu() {
+      const navMenu = document.getElementById('nav-menu');
+      try {
+        const response = await fetch('/api/user');
+        const navList = document.createElement('ul');
+        navList.className = 'nav-list';
+        if (response.ok) {
+          const user = await response.json();
+          navList.innerHTML = `
+            <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+            <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+            <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+            <li><a href="/add-article.html"><i class="fas fa-plus"></i> Добавить статью</a></li>
+            <li><a href="/add-event.html"><i class="fas fa-plus"></i> Добавить мероприятие</a></li>
+            <li><a href="/profile.html" class="active"><i class="fas fa-user"></i> ${user.username}</a></li>
+            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+          `;
+          navMenu.appendChild(navList);
+          document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+          });
+          document.getElementById('username-display').textContent = `Имя пользователя: ${user.username}`;
+        } else {
+          navList.innerHTML = `
+            <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+            <li><a href="/article.html"><i class="fas fa-newspaper"></i> Статьи</a></li>
+            <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+            <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Войти</a></li>
+            <li><a href="/register.html"><i class="fas fa-user-plus"></i> Регистрация</a></li>
+          `;
+          navMenu.appendChild(navList);
+          window.location.href = '/login.html';
+        }
+      } catch (err) {
+        console.error('Ошибка проверки пользователя:', err);
+      }
+    }
+
+    async function loadMyArticles() {
+      try {
+        const response = await fetch('/api/my-articles');
+        if (!response.ok) throw new Error(`Ошибка загрузки статей: ${response.status}`);
+        const articles = await response.json();
+        const container = document.getElementById('my-articles-container');
+        if (articles.length === 0) {
+          container.innerHTML = '<p>У вас пока нет статей.</p>';
+          return;
+        }
+        container.innerHTML = articles.map(article => `
+          <div class="article-card" data-url="/view-article.html?id=${article.id}">
+            ${article.image ? `<img src="/static/uploads/${article.image}" class="card-image" alt="Article image">` : ''}
+            <div class="card-content">
+              <h3>${article.title}</h3>
+              <p>${article.content.substring(0, 100)}...</p>
+              <div class="tags">${(article.tags || '').split(',').map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}</div>
+              <div class="card-buttons">
+                <button class="btn" data-id="${article.id}" data-action="edit">Редактировать</button>
+                <button class="btn" data-id="${article.id}" data-action="delete">Удалить</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.article-card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (e.target.tagName.toLowerCase() === 'button') return;
+            const url = card.dataset.url;
+            window.open(url, '_blank', 'noopener');
+          });
+        });
+
+        container.querySelectorAll('button').forEach(button => {
+          const id = button.dataset.id;
+          const action = button.dataset.action;
+          if (action === 'edit') {
+            button.addEventListener('click', (e) => {
+              e.stopPropagation();
+              openEditArticle(id);
+            });
+          } else if (action === 'delete') {
+            button.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deleteArticle(id);
+            });
+          }
+        });
+      } catch (err) {
+        console.error('Ошибка загрузки статей:', err);
+        document.getElementById('my-articles-container').innerHTML = '<p>Ошибка загрузки статей.</p>';
+      }
+    }
+
+    async function openEditArticle(articleId) {
+      try {
+        const response = await fetch(`/api/articles/${articleId}`);
+        if (!response.ok) throw new Error('Не удалось загрузить статью');
+        const article = await response.json();
+
+        document.getElementById('edit-article-id').value = article.id;
+        document.getElementById('edit-article-title').value = article.title;
+        document.getElementById('edit-article-content').value = article.content;
+        document.getElementById('edit-article-tags').value = article.tags || '';
+        document.getElementById('edit-article-image').value = '';
+
+        document.getElementById('edit-article-modal').style.display = 'block';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+      document.getElementById('edit-article-modal').style.display = 'none';
+    });
+
+    document.getElementById('edit-article-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-article-id').value;
+      const title = document.getElementById('edit-article-title').value.trim();
+      const content = document.getElementById('edit-article-content').value.trim();
+      const tags = document.getElementById('edit-article-tags').value.trim();
+
+      const imageInput = document.getElementById('edit-article-image');
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('tags', tags);
+      if (imageInput.files.length > 0) {
+        formData.append('image', imageInput.files[0]);
+      }
+
+      try {
+        const response = await fetch(`/api/articles/${id}`, {
+          method: 'PUT',
+          body: formData,
+        });
+        if (!response.ok) throw new Error('Ошибка при сохранении');
+        alert('Статья успешно обновлена');
+        document.getElementById('edit-article-modal').style.display = 'none';
+        loadMyArticles();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    async function deleteArticle(id) {
+      if (!confirm('Вы уверены, что хотите удалить эту статью?')) return;
+      try {
+        const response = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Ошибка при удалении');
+        alert('Статья успешно удалена');
+        loadMyArticles();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    updateNavMenu();
+    loadMyArticles();
+  </script>
+</body>
+</html>

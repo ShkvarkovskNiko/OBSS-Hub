@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Все статьи - OBSS Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+    <link rel="stylesheet" href="/static/styles/styles.css"/>
+    <style>
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        .article-card p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <div class="logo-search">
+            <a href="/" class="logo-link">
+                <h1><i class="fas fa-book"></i> OBSS Hub</h1>
+            </a>
+            <form id="search-form" class="search-bar">
+                <input type="text" id="search-input" placeholder="Поиск..."/>
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+        <nav id="nav-menu"></nav>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="container">
+        <section class="section">
+            <div class="section-header">
+                <h2>Все статьи</h2>
+                <a href="/add-article.html" class="view-all">Добавить статью</a>
+            </div>
+            <div class="tabs">
+                <div class="tab active" data-category="all">Все статьи</div>
+                <div class="tab" data-category="Технологии">Технологии</div>
+                <div class="tab" data-category="Наука">Наука</div>
+                <div class="tab" data-category="Культура">Культура</div>
+                <div class="tab" data-category="Искусство">Искусство</div>
+                <div class="tab" data-category="Спорт">Спорт</div>
+                <div class="tab" data-category="Образование">Образование</div>
+                <div class="tab" data-category="Технологии и инновации">Технологии и инновации</div>
+                <div class="tab" data-category="Разработка">Разработка</div>
+            </div>
+            <div id="articles-container" class="cards-grid"></div>
+        </section>
+    </div>
+</main>
+
+<footer id="main-footer" class="footer">
+    <div class="container">
+        <div class="footer-columns">
+            <div class="footer-links">
+                <h3>Навигация</h3>
+                <ul>
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/article.html">Статьи</a></li>
+                    <li><a href="/events.html">Мероприятия</a></li>
+                    <li><a href="/add-article.html">Добавить статью</a></li>
+                    <li><a href="/add-event.html">Добавить мероприятие</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Контакты</h3>
+                <ul>
+                    <li><a href="/cdn-cgi/l/email-protection">[email protected]</a></li>
+                    <li><a href="tel:+79991234567">+7 (999) 123-45-67</a></li>
+                </ul>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-vk"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">© 2025 OBSS Hub. Все права защищены.</div>
+    </div>
+</footer>
+
+<script src="/static/JavaScript/anima.js"></script>
+<script src="/static/JavaScript/search.js"></script>
+<script>
+    async function updateNavMenu() {
+        const navMenu = document.getElementById('nav-menu');
+        try {
+            const response = await fetch('/api/user');
+            const navList = document.createElement('ul');
+            navList.className = 'nav-list';
+            if (response.ok) {
+                const user = await response.json();
+                navList.innerHTML = `
+                    <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="/article.html" class="active"><i class="fas fa-newspaper"></i> Статьи</a></li>
+                    <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+                    <li><a href="/add-article.html"><i class="fas fa-plus"></i> Добавить статью</a></li>
+                    <li><a href="/add-event.html"><i class="fas fa-plus"></i> Добавить мероприятие</a></li>
+                    <li><a href="/profile.html"><i class="fas fa-user"></i> ${user.username}</a></li>
+                    <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                `;
+                navMenu.appendChild(navList);
+                document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await fetch('/api/logout', { method: 'POST' });
+                    window.location.href = '/';
+                });
+            } else {
+                navList.innerHTML = `
+                    <li><a href="/"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="/article.html" class="active"><i class="fas fa-newspaper"></i> Статьи</a></li>
+                    <li><a href="/events.html"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+                    <li><a href="/login.html"><i class="fas fa-sign-in-alt"></i> Войти</a></li>
+                    <li><a href="/register.html"><i class="fas fa-user-plus"></i> Регистрация</a></li>
+                `;
+                navMenu.appendChild(navList);
+            }
+        } catch (err) {
+            console.error('Ошибка проверки пользователя:', err);
+        }
+    }
+
+    async function loadArticles(category = 'all') {
+        try {
+            const response = await fetch('/api/articles');
+            if (!response.ok) throw new Error(`Ошибка загрузки статей: ${response.status}`);
+            let articles = await response.json();
+            const container = document.getElementById('articles-container');
+
+            // Фильтрация по категории
+            if (category !== 'all') {
+                articles = articles.filter(article => article.category === category);
+            }
+
+            if (articles.length === 0) {
+                container.innerHTML = '<p>Статей в этой категории пока нет.</p>';
+                return;
+            }
+
+            container.innerHTML = articles.map(article => `
+                <div class="article-card" data-url="/view-article.html?id=${article.id}">
+                    ${article.image ? `<img src="/static/uploads/${article.image}" class="card-image" alt="Article image">` : ''}
+                    <div class="card-content">
+                        <h3>${article.title}</h3>
+                        <p>${article.content.substring(0, 100)}...</p>
+                        <p>Категория: ${article.category || 'Без категории'}</p>
+                        <p>Рейтинг: ${article.rating || 0}</p>
+                        <div class="tags">${(article.tags || '').split(',').map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.article-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.tagName.toLowerCase() === 'button') return;
+                    const url = card.dataset.url;
+                    window.open(url, '_blank', 'noopener');
+                });
+            });
+        } catch (err) {
+            console.error('Ошибка загрузки статей:', err);
+            document.getElementById('articles-container').innerHTML = '<p>Ошибка загрузки статей.</p>';
+        }
+    }
+
+    // Обработчик вкладок
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const category = tab.dataset.category;
+            loadArticles(category);
+        });
+    });
+
+    updateNavMenu();
+    loadArticles();
+</script>
+</body>
+</html>
